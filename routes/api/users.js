@@ -7,7 +7,6 @@ const { Response } = require('../../models');
 
 const Users = mongoose.model('Users');
 
-
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
 
@@ -79,7 +78,29 @@ router.get('/current', auth.required, (req, res, next) => {
                 return res.sendStatus(400);
             }
 
-            return res.json(user.getAuthUser());
+            return res.json(user.getUserData());
+        });
+});
+
+router.post('/update-avatar', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { newAvatarStr } } = req;
+
+    return Users.updateOne({
+        _id: id,
+    }, { userAvatar: newAvatarStr })
+        .then((user) => {
+            if (!user) {
+                return res.sendStatus(400);
+            }
+
+            return Users.findById(id)
+                .then((user) => {
+                    if (!user) {
+                        return res.sendStatus(400);
+                    }
+
+                    return res.json(user.getUserData());
+                });
         });
 });
 

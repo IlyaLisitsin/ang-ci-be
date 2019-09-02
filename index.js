@@ -14,7 +14,6 @@ mongoose.connect(
     process.env.DATABASE_CONNECTION_URL,
     { useNewUrlParser: true },
 );
-
 express()
     .use((req, res, next) => {
         res.append('Access-Control-Allow-Origin', ['*']);
@@ -22,8 +21,8 @@ express()
         res.append('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         next();
     })
-    .use(bodyParser.urlencoded({ extended: false }))
-    .use(bodyParser.json())
+    .use(bodyParser.json({ limit: '50mb' }))
+    .use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
     .use(require('./routes'))
     .use(function (err, req, res, next) {
         console.error(err.stack);

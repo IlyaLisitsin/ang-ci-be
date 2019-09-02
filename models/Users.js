@@ -41,14 +41,17 @@ UsersSchema.methods.getAuthUser = function() {
     };
 };
 
-UsersSchema.methods.getUserJSON = function() {
+UsersSchema.methods.getUserData = function() {
     return {
-        _id: this._id,
-        email: this.email,
+        user: {
+            _id: this._id,
+            email: this.email,
+            login: this.login,
+            userAvatar: this.userAvatar,
+            subscribers: this.subscribers,
+            subscriptions: this.subscriptions,
+        },
         token: this.generateJWT(),
-        userAvatar: this.userAvatar,
-        subscribers: this.subscribers,
-        subscriptions: this.subscriptions,
     };
 };
 
