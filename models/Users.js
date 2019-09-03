@@ -4,6 +4,13 @@ const jwt = require('jsonwebtoken');
 
 const { Schema } = mongoose;
 
+const PostsSchema = new Schema({
+    postId: Schema.Types.ObjectId,
+    image: String,
+    postText: String,
+    postDate: Date,
+});
+
 const UsersSchema = new Schema({
     email: String,
     login: String,
@@ -12,6 +19,7 @@ const UsersSchema = new Schema({
     userAvatar: String,
     subscribers: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
     subscriptions: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
+    posts: [PostsSchema],
 }, { collection: 'users-collection', versionKey: false });
 
 UsersSchema.methods.setPassword = function(password) {
@@ -50,9 +58,21 @@ UsersSchema.methods.getUserData = function() {
             userAvatar: this.userAvatar,
             subscribers: this.subscribers,
             subscriptions: this.subscriptions,
+            posts: this.posts,
+        },
+        token: this.generateJWT(),
+    };
+};
+
+UsersSchema.methods.getUserPosts = function() {
+    console.log(posts)
+    return {
+        user: {
+            posts: this.posts,
         },
         token: this.generateJWT(),
     };
 };
 
 mongoose.model('Users', UsersSchema);
+mongoose.model('Posts', PostsSchema);

@@ -6,6 +6,7 @@ const auth = require('../auth');
 const { Response } = require('../../models');
 
 const Users = mongoose.model('Users');
+const Posts = mongoose.model('Posts');
 
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
@@ -104,4 +105,44 @@ router.post('/update-avatar', auth.required, (req, res, next) => {
         });
 });
 
+router.post('/add-post', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { post } } = req;
+
+    console.log(324, id)
+    console.log(324, post)
+
+    // return Users.updateOne({
+    //     _id: id,
+    // }, { posts: { $push: 324 } })
+    //     .then((user) => {
+    //         if (!user) {
+    //             return res.sendStatus(400);
+    //         }
+    //
+    //         return Users.findById(id)
+    //             .then((user) => {
+    //                 if (!user) {
+    //                     return res.sendStatus(400);
+    //                 }
+    //
+    //                 return res.json(user.getUserData());
+    //             });
+    //     });
+
+    Users.updateOne({
+    _id: id,
+    }, { $push: { posts: new Posts(post) } })
+    .then(user => {
+        console.log(34, user)
+    })
+});
+
 module.exports = router;
+
+
+// Users.updateOne({
+//     _id: '5d6807bb75105e00046f5448',
+// }, { $push: { posts: { postId: '5d6807bb75105e00046f5434', image: '', postText: 'уже не так уж и прикольно', postDate: '2019-09-03T08:49:10.784Z' } } })
+// .then(user => {
+//     console.log(34, user)
+// })
