@@ -6,6 +6,7 @@ const auth = require('../auth');
 const { Response } = require('../../models');
 
 const Users = mongoose.model('Users');
+const Posts = mongoose.model('Posts');
 
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
@@ -101,6 +102,51 @@ router.post('/update-avatar', auth.required, (req, res, next) => {
 
                     return res.json(user.getUserData());
                 });
+        });
+});
+
+router.post('/add-post', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { post } } = req;
+
+    console.log(324, id)
+    console.log(324, post)
+
+    // return Users.updateOne({
+    //     _id: id,
+    // }, { posts: { $push: 324 } })
+    //     .then((user) => {
+    //         if (!user) {
+    //             return res.sendStatus(400);
+    //         }
+    //
+    //         return Users.findById(id)
+    //             .then((user) => {
+    //                 if (!user) {
+    //                     return res.sendStatus(400);
+    //                 }
+    //
+    //                 return res.json(user.getUserData());
+    //             });
+    //     });
+
+    Users.updateOne({
+    _id: id,
+    }, { $push: { posts: new Posts(post) } })
+    .then(user => {
+        console.log(34, user)
+    })
+});
+
+router.get('/feed', auth.required, (req, res, next) => {
+    const { payload: { id } } = req;
+
+    return Users.findById(id)
+        .then(user => {
+            if (!user) {
+                return res.sendStatus(400);
+            }
+
+            return user.getUserFeed().then(posts => res.json(posts))
         });
 });
 
