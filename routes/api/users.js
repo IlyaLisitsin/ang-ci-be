@@ -137,12 +137,17 @@ router.post('/add-post', auth.required, (req, res, next) => {
     })
 });
 
+router.get('/feed', auth.required, (req, res, next) => {
+    const { payload: { id } } = req;
+
+    return Users.findById(id)
+        .then(user => {
+            if (!user) {
+                return res.sendStatus(400);
+            }
+
+            return user.getUserFeed().then(posts => res.json(posts))
+        });
+});
+
 module.exports = router;
-
-
-// Users.updateOne({
-//     _id: '5d6807bb75105e00046f5448',
-// }, { $push: { posts: { postId: '5d6807bb75105e00046f5434', image: '', postText: 'уже не так уж и прикольно', postDate: '2019-09-03T08:49:10.784Z' } } })
-// .then(user => {
-//     console.log(34, user)
-// })

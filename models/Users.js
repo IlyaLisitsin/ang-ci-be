@@ -6,6 +6,9 @@ const { Schema } = mongoose;
 
 const PostsSchema = new Schema({
     postId: Schema.Types.ObjectId,
+    postAuthorLogin: String,
+    postAuthorId: Schema.Types.ObjectId,
+    postAuthorAvatar: String,
     image: String,
     postText: String,
     postDate: Date,
@@ -64,14 +67,30 @@ UsersSchema.methods.getUserData = function() {
     };
 };
 
-UsersSchema.methods.getUserPosts = function() {
-    console.log(posts)
-    return {
-        user: {
-            posts: this.posts,
-        },
-        token: this.generateJWT(),
-    };
+UsersSchema.methods.getUserFeed = function() {
+    const userPosts = this.posts;
+
+    const token = this.generateJWT();
+
+    const promise = new Promise(resolve => {
+        mongoose.model('Users', UsersSchema).find({
+            _id: { $in: this.subscriptions }
+        }, function (err, res) {
+            const postsResult = res.reduce(
+                (postsCollection, nextUser) => postsCollection.concat(...nextUser.posts),
+                userPosts
+            );
+
+            resolve( {
+                user: {
+                    posts: postsResult.sort((b, a) => (a.postDate < b.postDate) ? -1 : ((a.postDate > b.postDate) ? 1 : 0)),
+                },
+                token,
+            });
+        });
+    });
+
+    return promise;
 };
 
 mongoose.model('Users', UsersSchema);
