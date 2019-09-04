@@ -81,10 +81,8 @@ UsersSchema.methods.getUserFeed = function() {
                 userPosts
             );
 
-            resolve( {
-                user: {
-                    posts: postsResult.sort((b, a) => (a.postDate < b.postDate) ? -1 : ((a.postDate > b.postDate) ? 1 : 0)),
-                },
+            resolve({
+                posts: postsResult.sort((b, a) => (a.postDate < b.postDate) ? -1 : ((a.postDate > b.postDate) ? 1 : 0)),
                 token,
             });
         });
