@@ -86,9 +86,10 @@ router.get('/current', auth.required, (req, res, next) => {
 router.post('/update-avatar', auth.required, (req, res, next) => {
     const { payload: { id }, body: { newAvatarStr } } = req;
 
-    return Users.updateOne({
-        _id: id,
-    }, { userAvatar: newAvatarStr })
+    return Users.updateOne(
+        { _id: id },
+        { $set: { "posts.$[elem].postAuthorAvatar": newAvatarStr }, userAvatar: newAvatarStr },
+        { arrayFilters: [{ 'elem.postAuthorAvatar': { $exists: true } }], multi: true })
         .then((user) => {
             if (!user) {
                 return res.sendStatus(400);
