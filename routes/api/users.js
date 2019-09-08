@@ -71,9 +71,11 @@ router.post('/login', auth.optional, (req, res, next) => {
 });
 
 router.get('/current', auth.required, (req, res, next) => {
-    const { payload: { id } } = req;
+    const { payload: { id }, query: { unlogedUserId } } = req;
 
-    return Users.findById(id)
+    const idToSearch = unlogedUserId ? unlogedUserId : id;
+
+    return Users.findById(idToSearch)
         .then((user) => {
             if (!user) {
                 return res.sendStatus(400);
