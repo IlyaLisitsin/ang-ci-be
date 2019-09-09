@@ -91,5 +91,13 @@ UsersSchema.methods.getUserFeed = function() {
     return promise;
 };
 
+UsersSchema.methods.getUserSearchResult = function(usersArray) {
+    const usersSearchResult = usersArray.map(({ login, userAvatar, _id}) => ({ login, userAvatar, _id }));
+    return {
+        usersSearchResult,
+        token: this.generateJWT(),
+    }
+};
+
 mongoose.model('Users', UsersSchema);
 mongoose.model('Posts', PostsSchema);

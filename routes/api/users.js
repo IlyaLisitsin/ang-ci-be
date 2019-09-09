@@ -153,4 +153,18 @@ router.get('/feed', auth.required, (req, res, next) => {
         });
 });
 
+router.get('/search', auth.required, (req, res, next) => {
+    const { query: { searchQuery } } = req;
+
+    Users.find({
+        login: new RegExp(searchQuery, 'gi'),
+    }).then(usersArray => {
+        if (!usersArray || !usersArray.length) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(usersArray[0].getUserSearchResult(usersArray));
+    })
+});
+
 module.exports = router;
