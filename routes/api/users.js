@@ -8,6 +8,8 @@ const { Response } = require('../../models');
 const Users = mongoose.model('Users');
 const Posts = mongoose.model('Posts');
 
+mongoose.set('useFindAndModify', false);
+
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
 
@@ -164,6 +166,38 @@ router.get('/search', auth.required, (req, res, next) => {
         }
 
         return res.json(usersArray[0].getUserSearchResult(usersArray));
+    })
+});
+
+router.put('/follow', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { subscriptionId } } = req;
+
+    Users.findOneAndUpdate(
+        { _id: id },
+        { $push: { subscriptions: subscriptionId } },
+        { new: true },
+    ).then(user => {
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(user.getUserData());
+    })
+});
+
+router.put('/unfollow', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { subscriptionId } } = req;
+
+    Users.findOneAndUpdate(
+        { _id: id },
+        { $pull: { subscriptions: subscriptionId } },
+        { new: true },
+    ).then(user => {
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(user.getUserData());
     })
 });
 
