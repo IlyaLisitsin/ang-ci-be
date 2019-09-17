@@ -12,6 +12,7 @@ const PostsSchema = new Schema({
     image: String,
     postText: String,
     postDate: Date,
+    comments: Array,
 });
 
 const UsersSchema = new Schema({
@@ -97,6 +98,10 @@ UsersSchema.methods.getUserSearchResult = function(usersArray) {
         usersSearchResult,
         token: this.generateJWT(),
     }
+};
+
+UsersSchema.methods.addNewPost = function({ image, postText }) {
+    console.log(234, this.login)
 };
 
 mongoose.model('Users', UsersSchema);

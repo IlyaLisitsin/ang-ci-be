@@ -110,36 +110,28 @@ router.post('/update-avatar', auth.required, (req, res, next) => {
         });
 });
 
-router.post('/add-post', auth.required, (req, res, next) => {
-    const { payload: { id }, body: { post } } = req;
+router.put('/add-post', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postText, image } } = req;
 
-    console.log(324, id)
-    console.log(324, post)
+    return Users.findById(id)
+        .then(user => {
+            if (!user) {
+                return res.sendStatus(400);
+            }
 
-    // return Users.updateOne({
-    //     _id: id,
-    // }, { posts: { $push: 324 } })
-    //     .then((user) => {
-    //         if (!user) {
-    //             return res.sendStatus(400);
-    //         }
-    //
-    //         return Users.findById(id)
-    //             .then((user) => {
-    //                 if (!user) {
-    //                     return res.sendStatus(400);
-    //                 }
-    //
-    //                 return res.json(user.getUserData());
-    //             });
-    //     });
-
-    Users.updateOne({
-    _id: id,
-    }, { $push: { posts: new Posts(post) } })
-    .then(user => {
-        console.log(34, user)
-    })
+            Users.updateOne({
+                _id: id,
+            }, { $push: { posts: new Posts({
+                        postText,
+                        image,
+                        postId: mongoose.Types.ObjectId(),
+                        postAuthorLogin: user.login,
+                        postAuthorId: user._id,
+                        postAuthorAvatar: user.userAvatar,
+                        postDate: new Date().toISOString(),
+                    }) } })
+                .then(user => res.json(user.getUserData()))
+        });
 });
 
 router.get('/feed', auth.required, (req, res, next) => {
