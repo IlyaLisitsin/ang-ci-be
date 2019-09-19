@@ -13,6 +13,7 @@ const PostsSchema = new Schema({
     postText: String,
     postDate: Date,
     comments: Array,
+    likedBy: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
 });
 
 const UsersSchema = new Schema({

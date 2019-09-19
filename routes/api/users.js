@@ -130,7 +130,7 @@ router.put('/add-post', auth.required, (req, res, next) => {
                         postAuthorAvatar: user.userAvatar,
                         postDate: new Date().toISOString(),
                     }) } })
-                .then(user => res.json(user.getUserData()))
+                .then(() => res.json(user.getUserData()))
         });
 });
 
@@ -190,6 +190,38 @@ router.put('/unfollow', auth.required, (req, res, next) => {
         }
 
         return res.json(user.getUserData());
+    })
+});
+
+router.put('/like-post', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postId, postAuthorId } } = req;
+
+    Users.findOneAndUpdate(
+        { _id: postAuthorId },
+        { $push: { "posts.$[elem].likedBy": id } },
+        { arrayFilters: [{ 'elem._id': postId }], multi: false, new: true }
+    ).then(user => {
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(new Response({ data: 'like success' }));
+    })
+});
+
+router.put('/unlike-post', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postId, postAuthorId } } = req;
+
+    Users.findOneAndUpdate(
+        { _id: postAuthorId },
+        { $pull: { "posts.$[elem].likedBy": id } },
+        { arrayFilters: [{ 'elem._id': postId }], multi: false, new: true }
+    ).then(user => {
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(new Response({ data: 'unlike success' }));
     })
 });
 
