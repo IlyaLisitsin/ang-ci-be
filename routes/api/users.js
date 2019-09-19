@@ -225,4 +225,12 @@ router.put('/unlike-post', auth.required, (req, res, next) => {
     })
 });
 
+router.get('/get-likes', auth.required, (req, res, next) => {
+    const { payload: { id }, query: { userIds } } = req;
+
+    Users.findById(id).then(user => {
+        return user.getPostLikes(userIds).then(likesResponse => res.json(likesResponse));
+    })
+});
+
 module.exports = router;

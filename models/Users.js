@@ -71,6 +71,8 @@ UsersSchema.methods.getUserData = function() {
 
 UsersSchema.methods.getUserFeed = function() {
     const userPosts = this.posts;
+    const userAvatar = this.userAvatar;
+    const userId = this._id;
 
     const token = this.generateJWT();
 
@@ -86,6 +88,8 @@ UsersSchema.methods.getUserFeed = function() {
             resolve({
                 posts: postsResult.sort((b, a) => (a.postDate < b.postDate) ? -1 : ((a.postDate > b.postDate) ? 1 : 0)),
                 token,
+                userAvatar,
+                userId,
             });
         });
     });
@@ -101,8 +105,22 @@ UsersSchema.methods.getUserSearchResult = function(usersArray) {
     }
 };
 
-UsersSchema.methods.addNewPost = function({ image, postText }) {
-    console.log(234, this.login)
+UsersSchema.methods.getPostLikes = function(userIds) {
+    const subscriptions = this.subscriptions;
+
+    const promise = new Promise(resolve => {
+        mongoose.model('Users', UsersSchema).find({
+            _id: { $in: userIds.split(',') }
+        }, function(err, res) {
+            const likeResponse = res.map(liker => {
+                return { userId: liker._id, userAvatar: liker.userAvatar, login: liker.login, isInSubscriptions: subscriptions.includes(liker._id) }
+            });
+
+            resolve(likeResponse);
+        })
+    });
+
+    return promise;
 };
 
 mongoose.model('Users', UsersSchema);
