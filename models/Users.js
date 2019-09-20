@@ -73,6 +73,7 @@ UsersSchema.methods.getUserFeed = function() {
     const userPosts = this.posts;
     const userAvatar = this.userAvatar;
     const userId = this._id;
+    const subscriptions = this.subscriptions;
 
     const token = this.generateJWT();
 
@@ -90,6 +91,7 @@ UsersSchema.methods.getUserFeed = function() {
                 token,
                 userAvatar,
                 userId,
+                subscriptions,
             });
         });
     });
