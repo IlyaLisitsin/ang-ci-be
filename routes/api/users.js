@@ -7,6 +7,7 @@ const { Response } = require('../../models');
 
 const Users = mongoose.model('Users');
 const Posts = mongoose.model('Posts');
+const Comments = mongoose.model('Comments');
 
 mongoose.set('useFindAndModify', false);
 
@@ -231,6 +232,26 @@ router.get('/get-likes', auth.required, (req, res, next) => {
     Users.findById(id).then(user => {
         return user.getPostLikes(userIds).then(likesResponse => res.json(likesResponse));
     })
+});
+
+router.put('/add-post-comment', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postId, text, replyTo, commentDate, postAuthorId, commentAuthorAvatar, commentAuthorLogin } } = req;
+
+    const postComment = new Comments({
+        text,
+        ...(replyTo ? replyTo : null),
+        commentDate,
+        commentAuthorAvatar,
+        commentAuthorLogin,
+        commentAuthorId: id,
+    });
+
+    Users.findOneAndUpdate(
+        { _id: postAuthorId },
+        { $push: { "posts.$[elem].comments": postComment } },
+        { arrayFilters: [{ 'elem._id': postId }], multi: false, new: true }
+    ).then(() => res.json(postComment))
+    .catch(() => res.json(new Response({ erorMessage: 'add comment error' })));
 });
 
 module.exports = router;

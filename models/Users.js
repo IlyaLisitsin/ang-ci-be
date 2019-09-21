@@ -4,6 +4,16 @@ const jwt = require('jsonwebtoken');
 
 const { Schema } = mongoose;
 
+const CommentsSchema = new Schema({
+    commentAuthorLogin: String,
+    commentAuthorId: { type: Schema.Types.ObjectId, ref: 'Users' },
+    commentAuthorAvatar: String,
+    text: String,
+    replyTo: { type: Schema.Types.ObjectId, ref: 'Comments' },
+    likedBy: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
+    commentDate: Date,
+});
+
 const PostsSchema = new Schema({
     postId: Schema.Types.ObjectId,
     postAuthorLogin: String,
@@ -12,7 +22,7 @@ const PostsSchema = new Schema({
     image: String,
     postText: String,
     postDate: Date,
-    comments: Array,
+    comments: [CommentsSchema],
     likedBy: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
 });
 
@@ -72,6 +82,7 @@ UsersSchema.methods.getUserData = function() {
 UsersSchema.methods.getUserFeed = function() {
     const userPosts = this.posts;
     const userAvatar = this.userAvatar;
+    const login = this.login;
     const userId = this._id;
     const subscriptions = this.subscriptions;
 
@@ -92,6 +103,7 @@ UsersSchema.methods.getUserFeed = function() {
                 userAvatar,
                 userId,
                 subscriptions,
+                login,
             });
         });
     });
@@ -127,3 +139,4 @@ UsersSchema.methods.getPostLikes = function(userIds) {
 
 mongoose.model('Users', UsersSchema);
 mongoose.model('Posts', PostsSchema);
+mongoose.model('Comments', CommentsSchema);
