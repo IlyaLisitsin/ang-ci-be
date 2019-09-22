@@ -254,4 +254,42 @@ router.put('/add-post-comment', auth.required, (req, res, next) => {
     .catch(() => res.json(new Response({ erorMessage: 'add comment error' })));
 });
 
+router.put('/like-post-comment', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postCommentId, postCommentAuthorId, postId } } = req;
+
+    console.log(req.body, id)
+
+    Users.findOneAndUpdate(
+        { _id: postCommentAuthorId },
+        { $push: { "posts.$[post].comments.$[comment].likedBy": id } },
+        { arrayFilters: [{ 'post._id': postId }, { 'comment._id': postCommentId }], multi: false, new: true }
+    ).then(user => {
+        console.log(user)
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(new Response({ data: 'like success' }));
+    })
+});
+
+router.put('/unlike-post-comment', auth.required, (req, res, next) => {
+    const { payload: { id }, body: { postCommentId, postCommentAuthorId, postId } } = req;
+
+    console.log(req.body, id)
+
+    Users.findOneAndUpdate(
+        { _id: postCommentAuthorId },
+        { $pull: { "posts.$[post].comments.$[comment].likedBy": id } },
+        { arrayFilters: [{ 'post._id': postId }, { 'comment._id': postCommentId }], multi: false, new: true }
+    ).then(user => {
+        console.log(user)
+        if (!user) {
+            return res.sendStatus(400);
+        }
+
+        return res.json(new Response({ data: 'unlike success' }));
+    })
+});
+
 module.exports = router;
