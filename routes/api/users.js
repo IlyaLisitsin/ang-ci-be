@@ -9,6 +9,9 @@ const Users = mongoose.model('Users');
 const Posts = mongoose.model('Posts');
 const Comments = mongoose.model('Comments');
 
+const ObjectId = mongoose.Types.ObjectId;
+
+
 mongoose.set('useFindAndModify', false);
 
 router.post('/', auth.optional, (req, res, next) => {
@@ -290,6 +293,19 @@ router.put('/unlike-post-comment', auth.required, (req, res, next) => {
 
         return res.json(new Response({ data: 'unlike success' }));
     })
+});
+
+router.get('/get-comments-list', auth.required, (req, res, next) => {
+    const { query: { postId, postAuthorId } } = req;
+
+    Users.aggregate([
+        { $match: { _id: ObjectId(postAuthorId) } },
+        { $unwind: { path: '$posts' } },
+        { $match: { 'posts._id': ObjectId(postId) } },
+        { $project: {
+            comments: '$posts.comments'
+        } },
+    ]).then(commentsResponse => res.json(commentsResponse[0]))
 });
 
 module.exports = router;
