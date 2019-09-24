@@ -260,14 +260,11 @@ router.put('/add-post-comment', auth.required, (req, res, next) => {
 router.put('/like-post-comment', auth.required, (req, res, next) => {
     const { payload: { id }, body: { postCommentId, postCommentAuthorId, postId } } = req;
 
-    console.log(req.body, id)
-
     Users.findOneAndUpdate(
         { _id: postCommentAuthorId },
         { $push: { "posts.$[post].comments.$[comment].likedBy": id } },
         { arrayFilters: [{ 'post._id': postId }, { 'comment._id': postCommentId }], multi: false, new: true }
     ).then(user => {
-        console.log(user)
         if (!user) {
             return res.sendStatus(400);
         }
@@ -279,14 +276,11 @@ router.put('/like-post-comment', auth.required, (req, res, next) => {
 router.put('/unlike-post-comment', auth.required, (req, res, next) => {
     const { payload: { id }, body: { postCommentId, postCommentAuthorId, postId } } = req;
 
-    console.log(req.body, id)
-
     Users.findOneAndUpdate(
         { _id: postCommentAuthorId },
         { $pull: { "posts.$[post].comments.$[comment].likedBy": id } },
         { arrayFilters: [{ 'post._id': postId }, { 'comment._id': postCommentId }], multi: false, new: true }
     ).then(user => {
-        console.log(user)
         if (!user) {
             return res.sendStatus(400);
         }
