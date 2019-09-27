@@ -11,7 +11,6 @@ const Comments = mongoose.model('Comments');
 
 const ObjectId = mongoose.Types.ObjectId;
 
-
 mongoose.set('useFindAndModify', false);
 
 router.post('/', auth.optional, (req, res, next) => {
