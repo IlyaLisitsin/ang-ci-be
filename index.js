@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+require('./models/Users');
+require('./models/MessagesHistory');
+require('./config/passport');
+
 const njwt = require('njwt');
 const express = require('express');
 const PORT = process.env.PORT || 5000;
@@ -7,8 +12,7 @@ const mongoose = require('mongoose');
 
 const { Response } = require('./models');
 
-require('./models/Users');
-require('./config/passport');
+const MessagesHistory = mongoose.model('MessagesHistory');
 
 mongoose.connect(
     process.env.DATABASE_CONNECTION_URL,
@@ -43,20 +47,15 @@ wss.on('connection', function(connection, req) {
         const { body: { id } } = njwt.verify(token, process.env.JWTTKN);
         if (!app.locals.wsConnections) app.locals.wsConnections = [];
         if (id) app.locals.wsConnections.push({ id, connection });
-
-        // console.log('AFTER ADD\n', app.locals.wsConnections.map(el => ({ id: el.id, state: el.connection.readyState })))
     } catch (e) {
-        console.log('(((')
+        console.log('(((', e)
     }
 
     connection.on('close', () => {
-        // console.log('LENGTH BC', app.locals.wsConnections.length)
-        // console.log('CLOSING\n', app.locals.wsConnections.map(el => ({ id: el.id, state: el.connection.readyState })))
         if (app.locals.wsConnections) {
             app.locals.wsConnections = app.locals.wsConnections.filter(connectionObj => connectionObj.connection.readyState !== 3)
         }
-        // console.log('LENGTH AC', app.locals.wsConnections.length)
-    })
+    });
 
     connection.on('message', function(message) {
         const data = JSON.parse(message).data;
@@ -70,14 +69,34 @@ wss.on('connection', function(connection, req) {
                 const sender = app.locals.wsConnections.find(connectionObj => connectionObj.id === data.from);
                 sender && sender.connection.send(JSON.stringify({
                     event: 'messages',
-                    data: data.text,
+                    data: {
+                        text: data.text,
+                        sender: data.from,
+                    },
+                    recipient: data.to,
                 }));
 
                 const recipient = app.locals.wsConnections.find(connectionObj => connectionObj.id === data.to);
                 recipient && recipient.connection.send(JSON.stringify({
                     event: 'messages',
-                    data: data.text,
+                    data: {
+                        text: data.text,
+                        sender: data.from,
+                    },
+                    recipient: data.from,
                 }));
+
+                const lowerIdHigherId = [data.from, data.to].sort((a, b) => {
+                    if (a > b) return 1;
+                    else return -1;
+                }).join('');
+
+                MessagesHistory.update(
+                    { lowerIdHigherId },
+                    { $push : { messages: { sender: data.from, text: data.text } }},
+                    { upsert : true}
+                );
+
         }
     })
 });
