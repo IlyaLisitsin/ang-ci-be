@@ -9,11 +9,9 @@ const express = require('express');
 const PORT = process.env.PORT || 5000;
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const http = require('http');
-const WebSocketServer = require('ws').Server;
 
-const wss = new WebSocketServer({ server });
 const { Response } = require('./models');
+
 const MessagesHistory = mongoose.model('MessagesHistory');
 
 mongoose.connect(
@@ -36,10 +34,10 @@ const app = express()
     res.status(500).json(new Response({ errorMessage: err.message }));
 });
 
-const server = http.createServer(app);
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-server.listen(PORT);
-console.log(`Listening on ${ PORT }`);
+const WebSocketServer = require('ws').Server;
+const wss = new WebSocketServer({ port: 1312 });
 
 wss.on('connection', function(connection, req) {
 
