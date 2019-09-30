@@ -80,7 +80,10 @@ UsersSchema.methods.getUserData = function() {
 };
 
 UsersSchema.methods.getUserFeed = function() {
-    const userPosts = this.posts;
+    const userPosts = this.posts.map(post => {
+        post.comments = post.comments.map(post => post._id);
+        return post;
+    });
     const userAvatar = this.userAvatar;
     const login = this.login;
     const userId = this._id;
@@ -93,7 +96,13 @@ UsersSchema.methods.getUserFeed = function() {
             _id: { $in: this.subscriptions }
         }, function (err, res) {
             const postsResult = res.reduce(
-                (postsCollection, nextUser) => postsCollection.concat(...nextUser.posts),
+                (postsCollection, nextUser) => {
+                    const posts = nextUser.posts.map(post => {
+                        post.comments = post.comments.map(post => post._id);
+                        return post;
+                    });
+                    return postsCollection.concat(posts)
+                },
                 userPosts
             );
 
