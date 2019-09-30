@@ -99,7 +99,7 @@ wss.on('connection', function(connection, req) {
                     { lowerIdHigherId },
                     { $push : { messages: { sender: data.from, text: data.text } }},
                     { upsert : true}
-                );
+                ).then(kek => kek);
 
         }
     })
