@@ -4,7 +4,7 @@ require('./models/Users');
 require('./models/MessagesHistory');
 require('./config/passport');
 
-const njwt = require('njwt');
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const PORT = process.env.PORT || 5000;
 const bodyParser = require('body-parser');
@@ -48,11 +48,13 @@ wss.on('connection', function(connection, req) {
     const token = req.url.split('/?token=')[1];
 
     try {
-        const { body: { id } } = njwt.verify(token, process.env.JWTTKN);
+        const payload = jwt.verify(token, process.env.JWTTKN);
+        const id = payload.id;
+
         if (!app.locals.wsConnections) app.locals.wsConnections = [];
         if (id) app.locals.wsConnections.push({ id, connection });
     } catch (e) {
-        console.log('(((', e)
+        console.log('token expired!')
     }
 
     connection.on('close', () => {
@@ -97,7 +99,7 @@ wss.on('connection', function(connection, req) {
 
                 MessagesHistory.update(
                     { lowerIdHigherId },
-                    { $push : { messages: { sender: data.from, text: data.text } }},
+                    { $push : { messages: { sender: data.from, text: data.text } }, $set: { lastActivity: new Date().toISOString() }},
                     { upsert : true}
                 ).then(kek => kek);
 

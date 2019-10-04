@@ -301,4 +301,15 @@ router.get('/get-comments-list', auth.required, (req, res, next) => {
     ]).then(commentsResponse => res.json(commentsResponse[0]))
 });
 
+router.get('/get-user-avatar', auth.required, (req, res, next) => {
+    const { query: { id } } = req;
+
+    Users.aggregate([
+        { $match: { _id: ObjectId(id) } },
+        { $project: {
+                userAvatar: 1
+        } },
+    ]).then(response => res.json(response[0]))
+});
+
 module.exports = router;
